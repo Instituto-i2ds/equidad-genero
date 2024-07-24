@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  # Este servicio es para la aplicación backend.
+  backend:
+    build:
+      context: . # Construye la imagen del contenedor desde el Dockerfile en el directorio actual.
+      dockerfile: Dockerfile # Usa el Dockerfile especificado para construir la imagen.
+    container_name: backend # Nombre del contenedor para facilidad de referencia.
+    ports:
+      - "8000:8000" # Mapea el puerto 8000 del contenedor al puerto 8000 del host, permitiendo acceso a la aplicación.
+    volumes:
+      - .:/app # Monta el directorio actual del host en el contenedor en /app. Esto facilita el desarrollo al reflejar cambios en tiempo real.
+    depends_on:
+      - db # Asegura que el contenedor de base de datos (db) esté iniciado antes de iniciar este contenedor.
+    environment:
+      - DATABASE_URL=${DATABASE_URL} # Usa la variable DATABASE_URL definida en el archivo .env.
+    networks:
+      - my_networ # Conecta el contenedor a la red llamada my_networ.
+    command: python ./run.py # Comando o script que se ejecutará cuando se inicie el contenedor.
+    working_dir: /app # Especifica el directorio de trabajo del contenedor.
+    tty: true # Permite la entrada de texto en el terminal.
+
+  # Este servicio es para la base de datos PostgreSQL.
+  db:
+    image: postgres:latest # Usa la imagen más reciente de PostgreSQL.
+    container_name: db # Nombre del contenedor para facilidad de referencia.
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER} # Usa la variable POSTGRES_USER definida en el archivo .env.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD} # Usa la variable POSTGRES_PASSWORD definida en el archivo .env.
+      - POSTGRES_DB=${POSTGRES_DB} # Usa la variable POSTGRES_DB definida en el archivo .env.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Monta el volumen postgres_data en el contenedor para persistir los datos de la base de datos.
+    networks:
+      - my_networ # Conecta el contenedor a la red llamada my_networ.
+
+# Aquí se definen los volúmenes que se usarán.
+volumes:
+  postgres_data: # Define un volumen llamado postgres_data para almacenar los datos de la base de datos.
+
+# Aquí se define la red que se utilizará.
+networks:
+  my_networ:
+    driver: bridge # Define una red de tipo 'bridge', que permite que los contenedores se comuniquen entre sí.
+
