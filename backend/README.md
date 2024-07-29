@@ -1,4 +1,4 @@
-# 🚀 Proyecto FastAPI
+# 🚀 Equidad genero
 
 Backend project with FastAPI on salary gap between men and women
 

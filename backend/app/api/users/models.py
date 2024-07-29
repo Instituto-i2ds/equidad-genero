@@ -11,72 +11,74 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
-class Usuario(Base):
-    __tablename__ = 'usuarios'
-
+class AbstractBase(Base):
+    __abstract__ = True
     id = Column(String(36), primary_key=True, default=generate_uuid)
-    nombre = Column(String(50), nullable=False)
-    apellido = Column(String(50), nullable=False)
+
+
+class Users(AbstractBase):
+    __tablename__ = "Users"
+
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
 
-    empresas = relationship("Empresa", back_populates="usuario")
+    Companies = relationship("Companies", back_populates="user")
 
 
-class Empresa(Base):
-    __tablename__ = 'empresas'
+class Companies(AbstractBase):
+    __tablename__ = "Companies"
 
-    id = Column(String(36), primary_key=True, default=generate_uuid)
-    nombre = Column(String(255), nullable=False)
-    user_id = Column(String(36), ForeignKey('usuarios.id'), nullable=False)
-    pais_id = Column(String(36), ForeignKey('paises.id'), nullable=False)
-    region_id = Column(String(36), ForeignKey('regiones.id'), nullable=False)
+    name = Column(String(255), nullable=False)
+    user_id = Column(String(36), ForeignKey("Users.id"), nullable=False)
+    country_id = Column(String(36), ForeignKey("Countries.id"), nullable=False)
+    state_id = Column(String(36), ForeignKey("States.id"), nullable=False)
+    sector = Column(String(100), nullable=True)  # New column
+    company_size = Column(String(100), nullable=True)  # New column
 
-    usuario = relationship("Usuario", back_populates="empresas")
-    pais = relationship("Pais", back_populates="empresas")
-    region = relationship("Region", back_populates="empresas")
-    empleados = relationship("Empleado", back_populates="empresa")
-
-
-class Empleado(Base):
-    __tablename__ = 'empleados'
-
-    id = Column(String(36), primary_key=True, default=generate_uuid)
-    salario = Column(Numeric(precision=10, scale=2), nullable=False)
-    genero = Column(String(10), nullable=False)
-    area = Column(String(100), nullable=False)
-    cargo = Column(String(100), nullable=False)
-    edad = Column(Integer, nullable=False)
-    anos_empresa = Column(Integer, nullable=False)
-    empresa_id = Column(String(36), ForeignKey('empresas.id'), nullable=False)
-    pais_id = Column(String(36), ForeignKey('paises.id'), nullable=False)
-    region_id = Column(String(36), ForeignKey('regiones.id'), nullable=False)
-
-    empresa = relationship("Empresa", back_populates="empleados")
-    pais = relationship("Pais", back_populates="empleados")
-    region = relationship("Region", back_populates="empleados")
+    user = relationship("Users", back_populates="Companies")
+    country = relationship("Countries", back_populates="Companies")
+    state = relationship("States", back_populates="Companies")
+    employees = relationship("Employees", back_populates="company")
 
 
-class Pais(Base):
-    __tablename__ = 'paises'
+class Employees(AbstractBase):
+    __tablename__ = "Employees"
 
-    id = Column(String(36), primary_key=True, default=generate_uuid)
-    nombre = Column(String(100), nullable=False)
-    abreviacion = Column(String(10), nullable=False)
+    salary = Column(Numeric(precision=10, scale=2), nullable=False)
+    gender = Column(String(10), nullable=False)
+    department = Column(String(100), nullable=False)
+    position = Column(String(100), nullable=False)
+    age = Column(Integer, nullable=False)
+    years_at_company = Column(Integer, nullable=False)
+    company_id = Column(String(36), ForeignKey("Companies.id"), nullable=False)
+    country_id = Column(String(36), ForeignKey("Countries.id"), nullable=False)
+    state_id = Column(String(36), ForeignKey("States.id"), nullable=False)
 
-    empresas = relationship("Empresa", back_populates="pais")
-    empleados = relationship("Empleado", back_populates="pais")
-    regiones = relationship("Region", back_populates="pais")
+    company = relationship("Companies", back_populates="employees")
+    country = relationship("Countries", back_populates="employees")
+    state = relationship("States", back_populates="employees")
 
 
-class Region(Base):
-    __tablename__ = 'regiones'
+class Countries(AbstractBase):
+    __tablename__ = "Countries"
 
-    id = Column(String(36), primary_key=True, default=generate_uuid)
-    nombre = Column(String(100), nullable=False)
-    abreviacion = Column(String(10), nullable=False)
-    pais_id = Column(String(36), ForeignKey('paises.id'), nullable=False)
+    name = Column(String(100), nullable=False)
+    abbreviation = Column(String(10), nullable=False)
 
-    pais = relationship("Pais", back_populates="regiones")
-    empresas = relationship("Empresa", back_populates="region")
-    empleados = relationship("Empleado", back_populates="region")
+    Companies = relationship("Companies", back_populates="country")
+    employees = relationship("Employees", back_populates="country")
+    states = relationship("States", back_populates="country")
+
+
+class States(AbstractBase):
+    __tablename__ = "States"
+
+    name = Column(String(100), nullable=False)
+    abbreviation = Column(String(10), nullable=False)
+    country_id = Column(String(36), ForeignKey("Countries.id"), nullable=False)
+
+    country = relationship("Countries", back_populates="states")
+    Companies = relationship("Companies", back_populates="state")
+    employees = relationship("Employees", back_populates="state")
